@@ -47,7 +47,7 @@ Line 1: the message consisting of `N` ASCII characters (without carriage return)
 
 ### Output
 
-The encoded message
+The encoded message.
 
 ### Constraints
 
