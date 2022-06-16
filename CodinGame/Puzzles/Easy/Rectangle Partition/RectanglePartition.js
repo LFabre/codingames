@@ -5,7 +5,9 @@ const _cutsX = [W];
 const cutsY = [0, H];
 const _cutsY = [H];
 
-// X
+// X - For Each cut Added on X we also add New Sections
+// equal to the difference between the recently added cut and 
+// all the previous ones
 for (const c of readline().split(' ').map(Number)) {
     cutsX.forEach(x => _cutsX.push(Math.abs(x - c)));
     cutsX.push(c);
