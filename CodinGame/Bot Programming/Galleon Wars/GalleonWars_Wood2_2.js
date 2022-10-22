@@ -5,7 +5,7 @@ const SHIP_LENGTH = 3;
 const SHIP_WIDTH = 1;
 
 const MINE_COOLDOWN = 4;
-const SHOT_COOLDOWN = 3;
+const SHOT_COOLDOWN = 4;
 
 const CANNON_RANGE = 13;
 
@@ -59,15 +59,15 @@ function isBarrel(entityType) {
 }
 
 function clamp(v, min, max) {
-  return Math.min(Math.max(v, min), max);
+    return Math.min(Math.max(v, min), max);
 }
 
 function clampWidth(v) {
-  return clamp(v, 0, GRID_WIDTH);
+    return clamp(v, 0, GRID_WIDTH);
 }
 
 function clampHeight(v) {
-  return clamp(v, 0, GRID_HEIGHT);
+    return clamp(v, 0, GRID_HEIGHT);
 }
 
 //:: Coordinates
@@ -103,26 +103,26 @@ function dist(y, x, z, y1, x1, z1) {
 }
 
 function nextOnDirection(y, x, d, speed) {
-  if (!speed) {
-    return [y, x];
+    if (!speed) {
+      return [y, x];
+    }
+  
+    const floorSpeed = Math.floor(speed / 2);
+    const isOdd = y & 1;
+  
+    switch (d) {
+        case 0: return [y, x + speed];
+        case 3: return [y, x - speed];
+  
+        case 1: return [y - speed, x + (floorSpeed || isOdd)];
+        case 4: return [y + speed, x - (floorSpeed || (isOdd ? 0 : 1))];
+  
+        case 5: return [y + speed, x + (floorSpeed || isOdd)];
+        case 2: return [y - speed, x - (floorSpeed || (isOdd ? 0 : 1))];
+        default:
+            throw `Unknown direction ${d}`;
+    }
   }
-
-  const floorSpeed = Math.floor(speed / 2);
-  const isOdd = y & 1;
-
-  switch (d) {
-    case 0: return [y, x + speed];
-    case 3: return [y, x - speed];
-
-    case 1: return [y - speed, x + (floorSpeed || isOdd)];
-    case 4: return [y + speed, x - (floorSpeed || (isOdd ? 0 : 1))];
-
-    case 5: return [y + speed, x + (floorSpeed || isOdd)];
-    case 2: return [y - speed, x - (floorSpeed || (isOdd ? 0 : 1))];
-    default:
-      throw `Unknown direction ${d}`;
-  }
-}
 
 //:: Fire
 function isInFireRange(y, x, y1, x1) {
@@ -141,13 +141,10 @@ function debug(...a) {
   console.error(...a);
 }
 
-let myX, myY, myD, mySpeed, myRum;
-let moveCommandUsed = false, myPrevY, myPrevX;
-let enemyX, enemyY, enemyD, enemySpeed;
 let shotCoolDown = 0;
-
 while (true) {
-
+  let sx, sy, mySpeed, myRum, bx, by;
+  let enemyX, enemyY, enemyD, enemySpeed;
 
   shotCoolDown = Math.max(0, shotCoolDown - 1);
 
@@ -160,11 +157,8 @@ while (true) {
     const [x, y, arg1, arg2, arg3, arg4] = params.map(Number);
 
     if (isAllyShip(entityType, arg4)) {
-      myPrevX = myX;
-      myPrevY = myY;
-      myX = x;
-      myY = y;
-      myD = arg1;
+      sx = x;
+      sy = y;
       mySpeed = arg2;
       myRum = arg3;
     } else if (isEnemyShip(entityType, arg4)) {
@@ -181,50 +175,43 @@ while (true) {
 
     //:: Fire at Enemy
     //debug({ r: isInFireRange(sy, sx, enemyY, enemyX) })
-    const [enemyNextY, enemyNextX] = nextOnDirection(enemyY, enemyX, enemyD, 1 + 2 * enemySpeed);
-    const [enemyPrevY, enemyPrevX] = nextOnDirection(enemyY, enemyX, enemyD, -1 * enemySpeed);
+    const [nextY, nextX] = nextOnDirection(enemyY, enemyX, enemyD, 2 * enemySpeed);
+    debug({
+        nextY,
+        nextX,
+        enemyY, enemyX, enemyD, enemySpeed
+    })
 
-    // debug({
-    //     enemyNextY,
-    //     enemyNextX,
-    //     enemyY, enemyX, enemyD, enemySpeed
-    // })
-
-    if (enemyNextX
-      && enemyNextY
-      && isInFireRange(myY, myX, enemyNextY, enemyNextX)
+    if (nextX
+      && nextY
+      && isInFireRange(sy, sx, nextY, nextX)
       && !shotCoolDown
-      && (mySpeed || !enemySpeed)
+      && mySpeed
+      && (
+        myRum > 30
+        || barrels.length === 0
+      )
     ) {
-      commandFire(enemyNextX, enemyNextY);
+      commandFire(nextX, nextY);
       shotCoolDown = SHOT_COOLDOWN;
-      moveCommandUsed = false;
-
-      // Try to Move
     } else {
-      let moveToX = enemyPrevX, moveToY = enemyPrevY
 
       if (barrels.length) {
         let d = Number.MAX_VALUE
         for (const [y, x] of barrels) {
-          let _d = distOffset(myY, myX, y, x);
+          let _d = distOffset(sy, sx, y, x);
 
           if (_d < d) {
-            moveToX = x;
-            moveToY = y;
+            bx = x;
+            by = y;
             d = _d;
           }
         }
+        commandMove(bx, by);
+      } else {
+        debug('Move to Enemy')
+        commandMove(enemyX, enemyY);
       }
-
-      if (myPrevX === myX && myPrevY === myY) {
-        const myNexts = nextOnDirection(myY, myX, myD, 2);
-        moveToY = myNexts[0]
-        moveToX = myNexts[1]
-      }
-
-      commandMove(moveToX, moveToY);
-      moveCommandUsed = true;
     }
   }
 }
