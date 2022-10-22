@@ -45,3 +45,10 @@ function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 var unique = a.filter(onlyUnique);
+
+// Shortest tips
+//
+// - No need to use `let`
+// - +number === toString()
+// - Use print
+// - Try to use WHILE
