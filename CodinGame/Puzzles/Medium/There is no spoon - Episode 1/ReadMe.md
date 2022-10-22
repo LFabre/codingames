@@ -14,12 +14,23 @@ To do this, you must find each (x1,y1) coordinates containing a node, and displa
 
 If a neighbor does not exist, you must output the coordinates `-1` `-1` instead of (x2,y2) and/or (x3,y3).
 
+Constraints
+
+- 0 < `width` ≤ 30
+- 0 < `height` ≤ 30
+- 0 ≤ `x1` < `width`
+- 0 ≤ `y1` < `height`
+- -1 ≤ `x2`, `x3` < `width`
+- -1 ≤ `y2`, `y3` < `height`
+- Alloted response time to first output line ≤ 1s.
+- Response time between two output lines ≤ 100ms.
+
 You __lose__ if:
 
-* You give an incorrect neighbor for a node.
-* You give the neighbors for an empty cell.
-* You compute the same node twice.
-* You forget to compute the neighbors of a node.
+- You give an incorrect neighbor for a node.
+- You give the neighbors for an empty cell.
+- You compute the same node twice.
+- You forget to compute the neighbors of a node.
 
 ## Victory Conditions
 
@@ -31,8 +42,8 @@ Warning: the tests provided are similar to the validation tests used to compute 
 
 Regarding the viewer, note that:
 
-* A debug mode is available from the settings panel (the dented wheel)
-* You can zoom/unzoom with the mouse wheel and move using drag'n drop (useful for large grids)
+- A debug mode is available from the settings panel (the dented wheel)
+- You can zoom/unzoom with the mouse wheel and move using drag'n drop (useful for large grids)
 
 ## Game Input
 
@@ -56,12 +67,13 @@ Where:
 (`x3`,`y3`) the coordinates of the closest bottom neighbor
 If there is no neighbor, the coordinates should be `-1` `-1`.
 
-Constraints
-0 < `width` ≤ 30
-0 < `height` ≤ 30
-0 ≤ `x1` < `width`
-0 ≤ `y1` < `height`
--1 ≤ `x2`, `x3` < `width`
--1 ≤ `y2`, `y3` < `height`
-Alloted response time to first output line ≤ 1s.
-Response time between two output lines ≤ 100ms.
+### Constraints
+
+- 0 < `width` ≤ 30
+- 0 < `height` ≤ 30
+- 0 ≤ `x1` < `width`
+- 0 ≤ `y1` < `height`
+- -1 ≤ `x2`, `x3` < `width`
+- -1 ≤ `y2`, `y3` < `height`
+- Alloted response time to first output line ≤ 1s.
+- Response time between two output lines ≤ 100ms.
