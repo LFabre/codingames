@@ -31,6 +31,10 @@ s.replace(/[^a-zA-Z\s]/g, '')
 
 //:: Specifics
 
+// Fahrenheit to Celsius
+const celsiusToFahrenheit = c => c * 9 / 5 + 32;
+const FahrenheitToCelsius = f => (f - 32) * 5 / 9;
+
 // Angles of Polygon
 (n - 2) * 180
 
