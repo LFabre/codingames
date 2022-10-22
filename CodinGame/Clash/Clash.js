@@ -23,11 +23,14 @@ Number('0x' + 'FF');
 // Degree to Rad
 angle * (Math.PI/180)
 
-// Regex not
-s.replace(/[^a-zA-Z\s]/g, '')
+// Regex not - Not a-Z
+s.replace(/[^a-z]/g, '')
 
 // Round
 10.45.toFixed(1)
+
+// Is Odd
+Boolean(13 & 1)
 
 //:: Specifics
 
