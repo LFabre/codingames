@@ -30,6 +30,9 @@
 
 - Some ships are getting stuck on the edges.
   - Improve unstuck logic.
+- Improve navigation of the ships
+  - This is a good puzzle to test an AStart path finding
+    - [HEXAGONAL MAZE](https://www.codingame.com/training/medium/hexagonal-maze)
 
 ## References
 
