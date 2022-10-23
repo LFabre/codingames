@@ -10,12 +10,9 @@ const FIRE_COOLDOWN = 3;
 const CANNON_RANGE = 13;
 
 const COMMAND = {
-  WAIT: 'WAIT',
   MOVE: 'MOVE',
+  WAIT: 'WAIT',
   SLOWER: 'SLOWER',
-  FASTER: 'FASTER',
-  LEFT: 'PORT',
-  RIGHT: 'STARBOARD',
   MINE: 'MINE',
   FIRE: 'FIRE',
 }
@@ -139,6 +136,18 @@ function nextOnDirection(y, x, d, speed) {
   }
 }
 
+//:: Fire
+function isInFireRange(y, x, y1, x1) {
+  return isInFireRangeCube(
+    ...offsetToCube(y, x),
+    ...offsetToCube(y1, x1)
+  );
+}
+
+function isInFireRangeCube(y, x, z, y1, x1, z1) {
+  return Math.floor(dist(y, x, z, y1, x1, z1)) <= CANNON_RANGE;
+}
+
 //:: Ships
 class Ship {
   constructor(id, x, y, d, speed, rum) {
@@ -167,14 +176,6 @@ class Ship {
 
   futureCoordinate(n) {
     return nextOnDirection(this.y, this.x, this.d, n);
-  }
-
-  isInFireRange(y, x) {
-    return this.isInFireRangeCube(...offsetToCube(y, x));
-  }
-  
-  isInFireRangeCube(y, x, z) {
-    return Math.floor(dist(...offsetToCube(this.y, this.x), y, x, z)) <= CANNON_RANGE;
   }
 }
 
@@ -208,15 +209,14 @@ class AllyShip extends Ship {
   }
 }
 
+const allyShips = [];
+const enemyShips = [];
 const entityMap = new Map();
 
 while (true) {
-  const myShipCount = parseInt(readline());
+  const _myShipCount = parseInt(readline());
   const entityCount = parseInt(readline());
-
   const barrels = [];
-  const allyShips = [];
-  const enemyShips = [];
 
   //:: Parse Entities
   for (let i = 0; i < entityCount; i++) {
@@ -225,25 +225,25 @@ while (true) {
 
     if (isShip(entityType)) {
       let ship = entityMap.get(entityId);
-      const sClass = isAlly(arg4) ? AllyShip : Ship;
-      const shipArr = isAlly(arg4) ? allyShips : enemyShips;
 
       if (!ship) {
+        const sClass = isAlly(arg4) ? AllyShip : Ship;
+        const shipArr = isAlly(arg4) ? allyShips : enemyShips;
+
         ship = new sClass(entityId, x, y, arg1, arg2, arg3);
         entityMap.set(entityId, ship);
+        shipArr.push(ship);
       } else {
         ship.updateStats(x, y, arg1, arg2, arg3);
       }
-
-      shipArr.push(ship);
     } else if (isBarrel(entityType)) {
       barrels.push([y, x]);
     }
   }
 
   //:: Set ship target
-  for (let j = 0; j < allyShips.length; j++) {
-    allyShips[j].setTarget(enemyShips[j] || enemyShips[0]);
+  for (let i = 0; i < enemyShips.length; i++) {
+    allyShips[i].setTarget(enemyShips[i] || enemyShips[0]);
   }
 
   //:: Ships Commands
@@ -256,7 +256,7 @@ while (true) {
 
     if (target.x
       && target.y
-      && aShip.isInFireRange(enemyNextY, enemyNextX)
+      && isInFireRange(aShip.y, aShip.x, enemyNextY, enemyNextX)
       && !aShip.fireCooldown
       && (aShip.speed || !target.speed)
     ) {
@@ -268,12 +268,12 @@ while (true) {
 
       if (barrels.length) {
         let d = Number.MAX_VALUE
-        for (const [by, bx] of barrels) {
-          let _d = distOffset(aShip.y, aShip.x, by, bx);
+        for (const [y, x] of barrels) {
+          let _d = distOffset(aShip.y, aShip.x, y, x);
 
           if (_d < d) {
-            moveToX = bx;
-            moveToY = by;
+            moveToX = x;
+            moveToY = y;
             d = _d;
           }
         }
@@ -287,5 +287,5 @@ while (true) {
 
       commandMove(moveToX, moveToY);
     }
-  }  
+  }
 }
