@@ -33,6 +33,23 @@
 - Improve navigation of the ships
   - This is a good puzzle to test an AStart path finding
     - [HEXAGONAL MAZE](https://www.codingame.com/training/medium/hexagonal-maze)
+- Change distance calculation?
+  - Code:
+
+    ```text
+        dx = B.x - A.x;
+        dy = B.y - A.y;
+        if (sign(dx) == sign(dy)) {    // this is (1); see first paragraph
+          dist = max(abs(dx),abs(dy));
+        } else {
+          dist = abs(dx) + abs(dy);
+        }
+        I think the simpler (=faster) method is:
+
+        dx = B.x - A.x;
+        dy = B.y - A.y;
+        dist = (abs (dx) + abs (dy) + abs (dx-dy)) / 2
+    ```
 
 ## References
 
