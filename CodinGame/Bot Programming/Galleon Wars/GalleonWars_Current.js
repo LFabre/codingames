@@ -71,6 +71,15 @@ function isCannonBall(entityType) {
   return entityType === ENTITY_TYPE.CANNONBALL;
 }
 
+function isNearEntity(grid, y, x, entityType) {
+  return getValidNeighborsCoords(y, x)
+    .some(([y, x]) => grid[y][x] && grid[y][x].type === entityType);
+}
+
+function isNearMine(grid, y, x) {
+  return isNearEntity(grid, y, x, ENTITY_TYPE.MINE);
+}
+
 function clamp(v, min, max) {
   return Math.min(Math.max(v || 0, min), max);
 }
@@ -124,7 +133,7 @@ function distOffset(y, x, y1, x1) {
 }
 
 function dist(y, x, z, y1, x1, z1) {
-  return Math.max(Math.abs(y - y1), Math.abs(x - x1), Math.abs(z - z1));
+  return Math.max(Math.abs(y - y1),Math.abs(x - x1),Math.abs(z - z1));
 }
 
 function nextOnDirection(y, x, d, speed) {
@@ -153,8 +162,8 @@ const COORDS_DIRECTIONS = {
   // 4, 4
   '0': {
     '-1': { '0': 5, '1': 4 },
-    '0': { '1': 3, '-1': 0 },
-    '1': { '1': 2, '0': 1 },
+    '0':  { '1': 3, '-1': 0 },
+    '1':  { '1': 2, '0': 1},
   },
   // 3, 3
   '1': {
@@ -187,6 +196,10 @@ function getNeighborsCoords(y, x) {
   }
 }
 
+function getValidNeighborsCoords(y, x) {
+  return getNeighborsCoords(y, x).filter(([y, x]) => isValidCoord(y, x));
+}
+
 function nextShipCoordsOnDirection(y, x, d, speed = 1) {
   return [
     nextOnDirection(y, x, d, speed),
@@ -199,8 +212,9 @@ function heuristic(aStarGrid, endX, endY) {
   return Math.abs(aStarGrid.x - endX) + Math.abs(aStarGrid.y - endY);
 }
 class PathFinder {
-  constructor(grid) {
+  constructor(grid, aShip) {
     this.grid = grid;
+    this.ship = aShip;
   }
 
   initAStarGrid() {
@@ -230,6 +244,9 @@ class PathFinder {
   }
 
   getNeighbors(aStarGrid, node) {
+    //const coords = getValidNeighborsCoords(node.y, node.x);
+    //return coords.map(([y, x]) => aStarGrid[y][x])
+
     const coords = nextShipCoordsOnDirection(node.y, node.x, node.d);
     const [y, x] = nextOnDirection(coords[0][0], coords[0][1], node.d);
 
@@ -237,8 +254,29 @@ class PathFinder {
       coords.shift();
     }
 
-    return coords.filter(([y, x]) => isValidCoord(y, x))
-      .map(([y, x]) => aStarGrid[y][x])
+    return coords
+      .filter(([y, x]) => isValidCoord(y, x)).map(([y ,x]) => aStarGrid[y][x])
+  }
+
+  calculateGScore(aStarGrid, currentNode, neighbor) {
+    const d = Math.abs(currentNode.d - neighbor.d);
+
+    // Check Mine Ahead
+    const [y, x] = nextOnDirection(currentNode.y, currentNode.x, d);
+    if (!isValidCoord(y, x) || (aStarGrid[y][x].value && isMine(aStarGrid[y][x].value.type))) {
+      return 30;
+    }
+
+    if (isNearMine(this.grid, neighbor.y, neighbor.x)) {
+      return 20;
+    }
+    
+    switch (d) {
+      case 0: return 1;
+      case 1: return 2;
+      case 3: return 5;
+      default: return 10;
+    }
   }
 
   findPath(startY, startX, startD, endY, endX) {
@@ -274,16 +312,15 @@ class PathFinder {
       for (const neighbor of this.getNeighbors(aStarGrid, currentNode)) {
         const { closed, value } = neighbor;
 
-        const ignore = [ENTITY_TYPE.MINE, ENTITY_TYPE.CANNONBALL]
-        if (closed || value && ignore.includes(value.type)
+        if (closed
+            || value && [ENTITY_TYPE.MINE, ENTITY_TYPE.CANNONBALL].includes(value.type)
+            || (value && value.type === ENTITY_TYPE.SHIP && value !== this.ship)
         ) {
           continue;
         }
 
+        const gScore = currentNode.G + this.calculateGScore(aStarGrid, currentNode, neighbor);
         const beenVisited = neighbor.visited;
-
-        const distanceFromCurrentToNeighbor = 1;
-        const gScore = currentNode.G + distanceFromCurrentToNeighbor;
 
         if (!beenVisited) {
           neighbor.H = heuristic(neighbor, endX, endY);
@@ -553,7 +590,6 @@ while (true) {
     const target = aShip.getTarget();
     const extraDistance = target.speed ? 1 : 0;
     const [enemyNextY, enemyNextX] = target.futureCoordinate(extraDistance + 2 * target.speed);
-    const [enemyPrevY, enemyPrevX] = target.futureCoordinate(Math.min(-1, -1 * target.speed));
 
     let moveToY, moveToX;
     let by, bx;
@@ -571,12 +607,12 @@ while (true) {
     }
 
     // Set where to go
-    if (aShip.rum < 200) {
+    if (barrels.length && aShip.rum < 73) {
       moveToY = by;
       moveToX = bx;
       debug('Move to Barrel')
     } else {
-      const m = target.futureCoordinate(3)
+      const m = target.futureCoordinate(2)
       moveToY = clampHeight(m[0], 1);
       moveToX = clampWidth(m[1], 1);
       debug('Move to Enemy')
@@ -585,9 +621,11 @@ while (true) {
     debug({ moveToY, moveToX });
 
     // Create Path
-    finder = new PathFinder(ocean.grid);
+    finder = new PathFinder(ocean.grid, aShip);
     const path = finder.findPath(aShip.y, aShip.x, aShip.d, moveToY, moveToX);
     ocean.setPath(path);
+
+
 
     if (target
       && aShip.isInFireRange(enemyNextY, enemyNextX)
@@ -622,9 +660,8 @@ while (true) {
 
       }
     } else {
-      debug(' NO PATH! ')
+      debug(' NO PATH! ');
       aShip.move(10, 10);
-
     }
   }
 
