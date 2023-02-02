@@ -32,6 +32,10 @@ s.replace(/[^a-z]/g, '')
 // Is Odd
 Boolean(13 & 1)
 
+// Sort
+['c', 'b', 'a'].sort() // a b c
+['a', 'b', 'c'].sort((a, b) => b - a) // c b a
+
 //:: Specifics
 
 // Fahrenheit to Celsius
@@ -59,3 +63,7 @@ var unique = a.filter(onlyUnique);
 // - +number === toString()
 // - Use print
 // - Try to use WHILE
+// - split``
+// - join``
+// - +readLine()
+// - +readLine(str='') // `str` is defined and can be used
