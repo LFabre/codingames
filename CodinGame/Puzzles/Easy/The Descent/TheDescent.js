@@ -1,3 +1,4 @@
+// game loop
 while (true) {
   let h = 0, idx = 0;
 
