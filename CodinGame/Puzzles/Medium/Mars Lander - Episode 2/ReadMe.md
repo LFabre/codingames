@@ -1,6 +1,6 @@
 # Mars Lander - Episode 2
 
-[Codin Game - Mars Lander - Episode 2](https://www.codingame.com/ide/puzzle/mars-lander-episode-1)
+[Codin Game - Mars Lander - Episode 2](https://www.codingame.com/ide/puzzle/mars-lander-episode-2)
 
 ## The Goal
 
@@ -14,7 +14,7 @@ Built as a game, the simulator puts Mars Lander on a limited zone of Mars sky.
 
 The zone is `7000m` wide and `3000m` high.
 
-There is a **unique area of flat ground** on the surface of Mars, which is at least 1000 meters wide.
+There is a **unique area of flat ground** on the surface of Mars, which is at least `1000` meters wide.
 
 **Every second**, depending on the current flight parameters (location, speed, fuel ...), the program must provide the new desired tilt angle and thrust power of Mars Lander:
 
