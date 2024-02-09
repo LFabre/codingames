@@ -17,23 +17,19 @@ for (let i = 0; i < surfaceN; i++) {
 
 while (true) {
   const [x, y, hSpeed] = parseLine();
-
+  let output = '0 4';
   if (doubleY === 150) {
     if (x > 4950) {
-      console.log('30 4');
+      output = '30 4';
     } else if (hSpeed < -20) {
-      console.log('-45 4');
-    } else {
-      console.log('0 4');
+      output = '-45 4';
     }
   } else {
     if (x > 4700) {
-      console.log('10 4');
-      continue;
+      output = '10 4';
     } else if (y > 1400) {
-      console.log('-25 3');
-    } else {
-      console.log('0 4');
+      output = '-25 3';
     }
   }
+  console.log(output);
 }
